@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+
+    stages {
+        stage("Clone Code") {
+            steps {
+                echo "Cloning the code"
+                git url: "https://github.com/adwognura/DjangoApp.git", branch: "main"
+            }
+        }
+
+        stage("Build") {
+            steps {
+                echo "Building the Docker image"
+                sh "docker build -t django-app ."
+            }
+        }
+        
+       /* stage("Push to Docker Hub") {
+            steps {
+                echo "Pushing the Docker image to Docker Hub"
+                withCredentials([usernamePassword(credentialsId: "Dockerhub", passwordVariable: "dockerHubPass", usernameVariable: "dockerHubUser")]) {
+                    sh "docker tag django-app ${env.dockerHubUser}/django-app:latest"
+                    sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
+                    sh "docker push ${env.dockerHubUser}/django-app:latest"
+                }
+            }
+        }
+*/
+
+        stage("Deploy") {
+            steps {
+                echo "Deploying the container"
+                sh "docker run -d adwognura98/django-app:latest -p 8000:8000"
+            }
+        }
+    }
+}
